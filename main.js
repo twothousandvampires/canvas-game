@@ -290,7 +290,10 @@ function Zombie(pos, created, time, power){
     this.hp = 10 + power;
     this.created = created;
     this.createdTime = time;
-    this.bounty = (Math.random() * (15 - 5) + 5) + power
+    this.bounty = (Math.random() * (15 - 5) + 5) + power;
+    this.soundPlayed = false;
+    this.audio  = document.createElement('audio');
+    this.audio.src = './music/zombie.mp3'
 }
 function BigZombie(pos, created, time, power){
     this.dom = document.createElement('img');
@@ -1369,7 +1372,16 @@ Player.prototype.act = function(step,keys,level){
     else if (this.attacked){ 
         if(enemy){
             if(!this.killedRecently && (this.animCount === 12 || this.animCount === 13)){             
-                var damage =  (Math.random() * (this.maxDamage - this.minDamage) + this.minDamage).toFixed(1);      
+                var damage =  (Math.random() * (this.maxDamage - this.minDamage) + this.minDamage).toFixed(1);
+                var hitSound = document.createElement('audio')
+                document.body.appendChild(hitSound)
+                hitSound.src = './music/hit.mp3'
+                hitSound.currentTime = 0.4;
+                hitSound.volume = 0.3
+                hitSound.play()
+                setTimeout(()=>{
+                    hitSound.parentNode.removeChild(hitSound)
+                },1000)      
                 level.takeDamage(enemy[0], damage, step, level.findDelta(this, enemy[0]));
                 this.killedRecently = true;                
                 setTimeout(()=>{
@@ -1729,7 +1741,7 @@ Zombie.prototype.act = function(step, keys, level){
         },this.createdTime * 1000)
     }
     else if(this.died || this.frozen){
-        
+        this.audio -= null;
     }
     else if(this.damaged){
         this.moveDelay = 0;
@@ -1765,7 +1777,15 @@ Zombie.prototype.act = function(step, keys, level){
             }      
         }
     }
-    else if(level.findPlayer(this, 1)){
+    else if(level.findPlayer(this, 1)){   
+        if(!this.soundPlayed){
+            this.soundPlayed = true;
+            this.audio.volume= 0.2;
+            this.audio.play();
+            setTimeout(()=>{
+                this.soundPlayed = false
+            },7000)
+        }
         this.moveDelay = 0;
         var playerPos = level.player.pos;
         var deltaX = playerPos.x - this.pos.x;        
@@ -1785,7 +1805,10 @@ Zombie.prototype.act = function(step, keys, level){
             this.pos = newPos;
         }     
     }
-    else{              
+    else{
+        this.audio.pause();
+        this.audio.currentTime = 0;
+        this.soundPlayed = false;      
         this.moveDelay -= step;
         if(this.moveDelay < 1){
             this.speed = new Vector(0, 0)
@@ -2508,6 +2531,9 @@ function startGame(){
     startBottom.innerText = `go!`
     startBottom.addEventListener('click',function(){
         startScreen.parentNode.removeChild(startScreen)
+        var a= document.getElementById('mainsound')
+        a.volume  = 0.2
+        a.play()
         runGame(plan, Display)
     })
     var startText = document.createElement('p');
