@@ -1326,7 +1326,7 @@ Player.prototype.act = function(step,keys,level){
             },this.castSpeed * 1000)
         }
         else if(this.mana < this.skills[skill-1].manacost){
-            createInfo("No mana enougch", this.pos.x, this.pos.y, step,'blue')
+            createInfo("Not enough mana", this.pos.x, this.pos.y, step,'blue')
             this.castRecently = true;
             setTimeout(()=>{
                 this.castRecently = false;
